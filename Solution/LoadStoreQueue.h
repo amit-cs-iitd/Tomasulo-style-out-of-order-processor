@@ -52,31 +52,34 @@ public:
         ready_broadcasts.clear();
 
         // Issue Stage
-        if (!q.empty())
+        for (auto &e : q)
         {
-            RSEntry &e = q.front();
-            if (!e.is_issued && e.src1_ready && e.src2_ready)
+            if (!e.is_issued)
             {
-                e.is_issued = true;
-                BroadcastEvent out;
-                out.valid = true;
-                out.rob_tag = e.rob_tag;
-                out.has_memory = true;
-
-                int addr = e.src1_value + e.imm;
-                out.mem_address = addr;
-                if (addr < 0 || addr >= static_cast<int>(Memory.size()))
+                if (e.src1_ready && e.src2_ready)
                 {
-                    out.has_exception = true;
-                }
-                else if (e.is_store)
-                {
-                    out.store_value = e.src2_value;
-                    store_data = e.src2_value;
-                }
+                    e.is_issued = true;
+                    BroadcastEvent out;
+                    out.valid = true;
+                    out.rob_tag = e.rob_tag;
+                    out.has_memory = true;
 
-                inflight.push_back({latency, out});
-                executing_info.push_back(e);
+                    int addr = e.src1_value + e.imm;
+                    out.mem_address = addr;
+                    if (addr < 0 || addr >= static_cast<int>(Memory.size()))
+                    {
+                        out.has_exception = true;
+                    }
+                    else if (e.is_store)
+                    {
+                        out.store_value = e.src2_value;
+                        store_data = e.src2_value;
+                    }
+
+                    inflight.push_back({latency, out});
+                    executing_info.push_back(e);
+                }
+                break; // only issue the oldest unissued instruction.
             }
         }
 
@@ -101,7 +104,7 @@ public:
                     const auto &entry = ROB[idx];
 
                     if (entry.tag == load_tag)
-                        break; // Stop at the current load
+                        break;
                     if (entry.op == OpCode::SW && entry.ready && entry.mem_address == out.mem_address)
                     {
                         forwarded_val = entry.store_value;
