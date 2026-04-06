@@ -590,7 +590,7 @@ public:
     {
         for (auto &u : units)
             u.executeCycle();
-        lsq->executeCycle(Memory);
+        lsq->executeCycle(Memory, ROB, rob_head, rob_count);
         broadcastOnCDB();
     }
 

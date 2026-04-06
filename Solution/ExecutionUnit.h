@@ -22,6 +22,7 @@ public:
     {
         int remaining = 0;
         BroadcastEvent event;
+        int rob_tag = -1;
     };
 
     std::deque<InFlight> pipeline;
@@ -149,26 +150,14 @@ public:
         has_exception = false;
         ready_broadcasts.clear();
 
-        for (auto &stage : pipeline)
-        {
-            stage.remaining--;
-        }
-
-        while (!pipeline.empty() && pipeline.front().remaining <= 0)
-        {
-            ready_broadcasts.push_back(pipeline.front().event);
-            has_result = true;
-            has_exception = has_exception || pipeline.front().event.has_exception;
-            pipeline.pop_front();
-        }
-
+        // issue stage
         int pick = -1;
         for (int i = 0; i < static_cast<int>(rs.size()); i++)
         {
-            if (rs[i].src1_ready && rs[i].src2_ready)
+            if (rs[i].src1_ready && rs[i].src2_ready && !rs[i].is_issued)
             {
                 pick = i;
-                break;
+                break; // picking the oldest ready instruction
             }
         }
 
@@ -177,8 +166,33 @@ public:
             InFlight in;
             in.remaining = latency;
             in.event = compute(rs[pick]);
+            in.rob_tag = rs[pick].rob_tag;
             pipeline.push_back(in);
-            rs.erase(rs.begin() + pick);
+            rs[pick].is_issued = true;
+        }
+
+        // Advance pipeline
+        for (auto &stage : pipeline)
+        {
+            stage.remaining--;
+        }
+
+        // Complete stage
+        while (!pipeline.empty() && pipeline.front().remaining <= 0)
+        {
+            auto &in = pipeline.front();
+            ready_broadcasts.push_back(in.event);
+            has_result = true;
+            has_exception = has_exception || in.event.has_exception;
+
+            int r_tag = in.rob_tag;
+            auto it = std::find_if(rs.begin(), rs.end(), [r_tag](const RSEntry &e)
+                                   { return e.rob_tag == r_tag; });
+            if (it != rs.end())
+            {
+                rs.erase(it);
+            }
+            pipeline.pop_front();
         }
     }
 

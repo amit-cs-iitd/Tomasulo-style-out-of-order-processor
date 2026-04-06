@@ -45,38 +45,19 @@ public:
         }
     }
 
-    void executeCycle(std::vector<int> &Memory)
+    void executeCycle(std::vector<int> &Memory, const std::vector<ROBEntry> &ROB, int rob_head, int rob_count)
     {
         has_result = false;
         has_exception = false;
         ready_broadcasts.clear();
 
-        for (auto &p : inflight)
-            p.first--;
-        while (!inflight.empty() && inflight.front().first <= 0)
+        // Issue Stage
+        if (!q.empty())
         {
-            BroadcastEvent out = inflight.front().second;
-            const RSEntry &origin = executing_info.front();
-            if (out.has_memory && out.mem_address >= 0 &&
-                out.mem_address < static_cast<int>(Memory.size()) &&
-                origin.is_load)
+            RSEntry &e = q.front();
+            if (!e.is_issued && e.src1_ready && e.src2_ready)
             {
-                out.value = Memory[out.mem_address];
-            }
-            ready_broadcasts.push_back(out);
-            has_result = true;
-            has_exception = has_exception || out.has_exception;
-            inflight.pop_front();
-            executing_info.erase(executing_info.begin());
-        }
-
-        if (!q.empty() && inflight.empty())
-        {
-            RSEntry e = q.front();
-            if (e.src1_ready && e.src2_ready)
-            {
-                q.pop_front();
-
+                e.is_issued = true;
                 BroadcastEvent out;
                 out.valid = true;
                 out.rob_tag = e.rob_tag;
@@ -97,6 +78,50 @@ public:
                 inflight.push_back({latency, out});
                 executing_info.push_back(e);
             }
+        }
+
+        // Advance Pipeline
+        for (auto &p : inflight)
+            p.first--;
+
+        // Complete Stage
+        while (!inflight.empty() && inflight.front().first <= 0)
+        {
+            BroadcastEvent out = inflight.front().second;
+            const RSEntry &origin = executing_info.front();
+
+            if (out.has_memory && !out.has_exception && origin.is_load)
+            {
+                int load_tag = out.rob_tag;
+                int forwarded_val = Memory[out.mem_address];
+
+                for (int i = 0; i < rob_count; i++)
+                {
+                    int idx = (rob_head + i) % static_cast<int>(ROB.size());
+                    const auto &entry = ROB[idx];
+
+                    if (entry.tag == load_tag)
+                        break; // Stop at the current load
+                    if (entry.op == OpCode::SW && entry.ready && entry.mem_address == out.mem_address)
+                    {
+                        forwarded_val = entry.store_value;
+                    }
+                }
+                out.value = forwarded_val;
+            }
+
+            ready_broadcasts.push_back(out);
+            has_result = true;
+            has_exception = has_exception || out.has_exception;
+
+            int r_tag = out.rob_tag;
+            auto it = std::find_if(q.begin(), q.end(), [r_tag](const RSEntry &rq)
+                                   { return rq.rob_tag == r_tag; });
+            if (it != q.end())
+                q.erase(it);
+
+            inflight.pop_front();
+            executing_info.erase(executing_info.begin());
         }
     }
 

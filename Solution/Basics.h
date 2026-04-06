@@ -108,6 +108,7 @@ struct RSEntry
 
     bool is_load = false;
     bool is_store = false;
+    bool is_issued = false;
 };
 
 struct BroadcastEvent
