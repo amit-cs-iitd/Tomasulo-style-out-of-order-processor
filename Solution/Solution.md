@@ -1,4 +1,4 @@
-## COL216 Assn2 Solution Notes
+# COL216 Assn2 Solution Notes
 
 This solution implements a Tomasulo-style out-of-order processor with:
 
@@ -9,7 +9,7 @@ This solution implements a Tomasulo-style out-of-order processor with:
 - per-PC 2-bit branch predictor
 - precise exceptions via in-order commit
 
-### 1) Implementations
+## 1) Implementations
 
 - `Processor.h`
   - full program loader/parser
@@ -50,7 +50,7 @@ This solution implements a Tomasulo-style out-of-order processor with:
   - memory symbol replacement like `A(x1) -> <addr>(x1)`
   - writes preprocessed assembly back into same file
 
-### 2) Stage-by-stage behavior
+## 2) Stage-by-stage behavior
 
 - Fetch:
   - fetches instruction at current `pc`
@@ -78,7 +78,7 @@ This solution implements a Tomasulo-style out-of-order processor with:
   - on branch mispredict: flush younger pipeline state, set recovery PC
   - on exception: set `exception=true`, set `pc=faulting_pc`, flush, halt
 
-### 3) Exception model
+## 3) Exception model
 
 - Arithmetic overflow for `add/sub/addi/mul`
 - `div/rem` by zero
@@ -86,7 +86,7 @@ This solution implements a Tomasulo-style out-of-order processor with:
 
 All exceptions are generated on execution completion, stored in ROB, and only become architectural at commit. This guarantees precise exceptions.
 
-### 4) Important correctness points followed
+## 4) Important correctness points followed
 
 - `x0` forced to 0 always
 - architectural state updates only in commit
@@ -97,7 +97,7 @@ All exceptions are generated on execution completion, stored in ROB, and only be
   - program is out of fetch range
   - and no fetched/decode/ROB/RS/LSQ in-flight work exists
 
-### 5) Files included for submission
+## 5) Files included for submission
 
 This directory includes:
 
@@ -112,7 +112,7 @@ This directory includes:
 - `README.md`
 - `Solution.md`
 
-### 6) Build and run
+## 6) Build and run
 
 - Compile:
 
@@ -132,13 +132,13 @@ make run FILE=<filename.s>
 ./main <filename.s> [additional_args...]
 ```
 
-### 7) Verification summary
+## 7) Verification
 
 The implementation was compiled and run on provided sample programs (`code1` to `code5`) and the output was as expected (as given in `ans1` to `ans5` respectively)
 
-### 8) Formatting:
+## 8) Formatting:
 
-- Formatted `.h` files using default VSCode formatter C/C++
+- Formatted `.h` files using default VSCode formatter extension: `C/C++`
 - Formatted `compiler.py` using `Black` 
 - Formatted `Solution.md` using `Prettier`
 - `Makefile`, `README.md` and `main.cpp` are left untouched as given on `GitHub`
