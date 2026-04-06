@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import re
 import sys
 from typing import Dict, List
@@ -14,7 +13,7 @@ def tokenize(line: str) -> List[str]:
 
 def main() -> int:
     if len(sys.argv) != 2:
-        print("Usage: python3 compiler.py <filename.s>")
+        print("Usage: python3 compiler.py <filename.s>")  # inspired from main.cpp
         return 1
 
     path = sys.argv[1]
@@ -73,7 +72,11 @@ def main() -> int:
             out.append(f"j {imm}")
             current_pc += 1
             continue
-        if op in {"beq", "bne", "blt", "ble"} and len(toks) >= 4 and toks[3] in code_labels:
+        if (
+            op in {"beq", "bne", "blt", "ble"}
+            and len(toks) >= 4
+            and toks[3] in code_labels
+        ):
             target = code_labels[toks[3]]
             imm = target - current_pc
             out.append(f"{op} {toks[1]} {toks[2]} {imm}")

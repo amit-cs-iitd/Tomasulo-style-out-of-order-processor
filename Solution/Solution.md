@@ -1,6 +1,7 @@
 ## COL216 Assn2 Solution Notes
 
 This solution implements a Tomasulo-style out-of-order processor with:
+
 - per-unit reservation stations
 - register alias table (RAT)
 - reorder buffer (ROB)
@@ -8,7 +9,7 @@ This solution implements a Tomasulo-style out-of-order processor with:
 - per-PC 2-bit branch predictor
 - precise exceptions via in-order commit
 
-### 1) What is implemented
+### 1) Implementations
 
 - `Processor.h`
   - full program loader/parser
@@ -98,7 +99,8 @@ All exceptions are generated on execution completion, stored in ROB, and only be
 
 ### 5) Files included for submission
 
-This `Solution` directory includes:
+This directory includes:
+
 - `Basics.h`
 - `BranchPredictor.h`
 - `ExecutionUnit.h`
@@ -108,19 +110,35 @@ This `Solution` directory includes:
 - `compiler.py`
 - `main.cpp`
 - `README.md`
-- `extra.md`
+- `Solution.md`
 
 ### 6) Build and run
 
 - Compile:
-  - `make compile FILE=main.cpp`
+
+```bash
+make compile FILE=<filename.cpp>
+```
 
 - Preprocess input assembly:
-  - `make run FILE=programs/code4.txt`
+
+```bash
+make run FILE=<filename.s>
+```
 
 - Execute:
-  - `./main programs/code4.txt`
+
+```bash
+./main <filename.s> [additional_args...]
+```
 
 ### 7) Verification summary
 
-The implementation was compiled and run on provided sample programs (`code1` to `code5`) and produced sensible architectural outcomes, including correct exception behavior and realistic branch predictor stats on loop-heavy tests.
+The implementation was compiled and run on provided sample programs (`code1` to `code5`) and the output was as expected (as given in `ans1` to `ans5` respectively)
+
+### 8) Formatting:
+
+- Formatted `.h` files using default VSCode formatter C/C++
+- Formatted `compiler.py` using `Black` 
+- Formatted `Solution.md` using `Prettier`
+- `Makefile`, `README.md` and `main.cpp` are left untouched as given on `GitHub`
