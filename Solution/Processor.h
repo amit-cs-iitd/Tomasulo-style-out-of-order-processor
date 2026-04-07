@@ -51,6 +51,7 @@ public:
     } fetched;
 
     bool halted = false;
+    bool just_flushed = false;
 
     Processor(ProcessorConfig &config)
     {
@@ -371,6 +372,7 @@ public:
 
     void flush()
     {
+        just_flushed = true;
         fetched = FetchBundle{};
         for (auto &u : units)
         {
@@ -671,16 +673,24 @@ public:
     bool step()
     {
         if (halted)
+        {
             return false;
+        }
         clock_cycle++;
+        just_flushed = false;
         stageCommit();
+        if (halted)
+        {
+            return false;
+        }
         stageExecuteAndBroadcast();
         stageDecode();
-        stageFetch();
+        if (!just_flushed)
+        {
+            stageFetch();
+        }
         ARF[0] = 0;
 
-        if (halted)
-            return false;
         bool no_more_program = (pc < 0 || pc >= static_cast<int>(inst_memory.size()));
         if (no_more_program && !hasInFlightWork())
             return false;
