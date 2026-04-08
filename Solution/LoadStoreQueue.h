@@ -58,6 +58,35 @@ public:
             {
                 if (e.src1_ready && e.src2_ready)
                 {
+                    if (e.is_load)
+                    {
+                        int load_addr = e.src1_value + e.imm;
+                        bool delay_load = false;
+                        for (const auto &older : q)
+                        {
+                            if (older.rob_tag == e.rob_tag)
+                                break;
+                            if (!older.is_store || !older.is_issued || !older.src1_ready)
+                                continue;
+                            int store_addr = older.src1_value + older.imm;
+                            if (store_addr != load_addr)
+                                continue;
+
+                            for (int k = 0; k < static_cast<int>(executing_info.size()) && k < static_cast<int>(inflight.size()); k++)
+                            {
+                                if (executing_info[k].rob_tag == older.rob_tag && inflight[k].first == 2)
+                                {
+                                    delay_load = true;
+                                    break;
+                                }
+                            }
+                            if (delay_load)
+                                break;
+                        }
+                        if (delay_load)
+                            break;
+                    }
+
                     e.is_issued = true;
                     BroadcastEvent out;
                     out.valid = true;
@@ -97,6 +126,7 @@ public:
             {
                 int load_tag = out.rob_tag;
                 int forwarded_val = Memory[out.mem_address];
+                bool has_forward_source = false;
 
                 for (int i = 0; i < rob_count; i++)
                 {
@@ -105,10 +135,18 @@ public:
 
                     if (entry.tag == load_tag)
                         break;
-                    if (entry.op == OpCode::SW && entry.ready && entry.mem_address == out.mem_address)
+                    if (entry.op == OpCode::SW && entry.valid && entry.mem_address == out.mem_address)
                     {
                         forwarded_val = entry.store_value;
+                        has_forward_source = true;
                     }
+                }
+                if (has_forward_source && !out.lsq_forward_delay_applied)
+                {
+                    out.lsq_forward_delay_applied = true;
+                    inflight.front().second = out;
+                    inflight.front().first = 1;
+                    continue;
                 }
                 out.value = forwarded_val;
             }

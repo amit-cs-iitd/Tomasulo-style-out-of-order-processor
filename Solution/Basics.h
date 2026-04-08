@@ -86,6 +86,10 @@ struct ROBEntry
 
     int mem_address = 0;
     int store_value = 0;
+
+    // Used for instructions that do not use an execution unit (e.g. J),
+    // but still need to become ready only after passing through a cycle boundary.
+    int ready_delay = 0;
 };
 
 struct RSEntry
@@ -126,4 +130,7 @@ struct BroadcastEvent
     bool has_memory = false;
     int mem_address = 0;
     int store_value = 0;
+
+    // Internal LSQ timing bookkeeping.
+    bool lsq_forward_delay_applied = false;
 };

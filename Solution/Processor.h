@@ -515,7 +515,16 @@ public:
         if (ins.op == OpCode::J)
         {
             ROBEntry *re = getROBByTag(tag);
-            re->ready = true;
+            bool is_noop_jump = (ins.imm == 1);
+            bool prev_is_noop_jump = false;
+            if (ins.pc > 0)
+            {
+                const Instruction &prev = inst_memory[ins.pc - 1];
+                prev_is_noop_jump = (prev.op == OpCode::J && prev.imm == 1);
+            }
+            bool delay_jump_ready = is_noop_jump && !prev_is_noop_jump;
+            re->ready = !delay_jump_ready;
+            re->ready_delay = delay_jump_ready ? 1 : 0;
             re->branch_taken = true;
             re->actual_next_pc = ins.pc + ins.imm;
             fetched.valid = false;
@@ -601,6 +610,13 @@ public:
         if (rob_count == 0)
             return;
         ROBEntry &head = ROB[rob_head];
+        if (head.valid && !head.ready && head.ready_delay > 0)
+        {
+            head.ready_delay--;
+            if (head.ready_delay == 0)
+                head.ready = true;
+            return;
+        }
         if (!head.valid || !head.ready)
             return;
 
