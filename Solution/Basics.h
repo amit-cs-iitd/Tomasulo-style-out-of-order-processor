@@ -86,7 +86,6 @@ struct ROBEntry
 
     int mem_address = 0;
     int store_value = 0;
-
 };
 
 struct RSEntry

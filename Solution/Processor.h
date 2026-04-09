@@ -52,6 +52,8 @@ public:
 
     bool halted = false;
     bool just_flushed = false;
+    std::vector<bool> unit_rs_was_full;
+    bool lsq_was_full = false;
 
     Processor(ProcessorConfig &config)
     {
@@ -76,6 +78,7 @@ public:
         units.emplace_back(UnitType::BRANCH, config.add_lat, config.br_rs_size);
         units.emplace_back(UnitType::LOGIC, config.logic_lat, config.logic_rs_size);
         lsq = new LoadStoreQueue(config.mem_lat, config.lsq_rs_size);
+        unit_rs_was_full.assign(units.size(), false);
     }
 
     void loadProgram(const std::string &filename)
@@ -497,12 +500,25 @@ public:
         {
             if (unit_t == UnitType::LOADSTORE)
             {
+                if (lsq_was_full)
+                    return;
                 if (!lsq->hasSpace())
                     return;
             }
             else
             {
                 ExecutionUnit *u = getUnit(unit_t);
+                int unit_idx = -1;
+                for (int i = 0; i < static_cast<int>(units.size()); i++)
+                {
+                    if (&units[i] == u)
+                    {
+                        unit_idx = i;
+                        break;
+                    }
+                }
+                if (unit_idx != -1 && unit_rs_was_full[unit_idx])
+                    return;
                 if (!u || !u->hasSpace())
                     return;
             }
@@ -678,6 +694,9 @@ public:
         }
         clock_cycle++;
         just_flushed = false;
+        for (int i = 0; i < static_cast<int>(units.size()); i++)
+            unit_rs_was_full[i] = !units[i].hasSpace();
+        lsq_was_full = !lsq->hasSpace();
         stageCommit();
         if (halted)
         {
