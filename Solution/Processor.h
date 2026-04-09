@@ -54,6 +54,7 @@ public:
     bool just_flushed = false;
     std::vector<bool> unit_rs_was_full;
     bool lsq_was_full = false;
+    bool rob_was_full = false;
 
     Processor(ProcessorConfig &config)
     {
@@ -494,6 +495,8 @@ public:
         bool needs_rs = !(ins.op == OpCode::J);
         UnitType unit_t = unitForOp(ins.op);
 
+        if (rob_was_full)
+            return;
         if (rob_count >= static_cast<int>(ROB.size()))
             return;
         if (needs_rs)
@@ -694,6 +697,7 @@ public:
         }
         clock_cycle++;
         just_flushed = false;
+        rob_was_full = (rob_count >= static_cast<int>(ROB.size()));
         for (int i = 0; i < static_cast<int>(units.size()); i++)
             unit_rs_was_full[i] = !units[i].hasSpace();
         lsq_was_full = !lsq->hasSpace();
