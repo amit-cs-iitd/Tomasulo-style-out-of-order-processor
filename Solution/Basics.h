@@ -87,9 +87,6 @@ struct ROBEntry
     int mem_address = 0;
     int store_value = 0;
 
-    // Used for instructions that do not use an execution unit (e.g. J),
-    // but still need to become ready only after passing through a cycle boundary.
-    int ready_delay = 0;
 };
 
 struct RSEntry
