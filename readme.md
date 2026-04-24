@@ -1,6 +1,5 @@
-# COL216 Assn2 Solution Notes
 
-This solution implements a Tomasulo-style out-of-order processor with:
+This project implements a Tomasulo-style out-of-order processor with:
 
 - per-unit reservation stations
 - register alias table (RAT)
@@ -97,7 +96,7 @@ All exceptions are generated on execution completion, stored in ROB, and only be
   - program is out of fetch range
   - and no fetched/decode/ROB/RS/LSQ in-flight work exists
 
-## 5) Files included for submission
+## 5) Files included inside Solution directory
 
 This directory includes:
 
@@ -134,7 +133,7 @@ make run FILE=<filename.s>
 
 ## 7) Verification
 
-The implementation was compiled and run on provided sample programs (`code1` to `code5`) and the output was as expected (as given in `ans1` to `ans5` respectively)
+The implementation was compiled and run on provided sample programs (`code1` to `code5`) and the output was as expected (as given in `ans1` to `ans5` respectively).
 
 ## 8) Formatting:
 
@@ -142,3 +141,7 @@ The implementation was compiled and run on provided sample programs (`code1` to 
 - Formatted `compiler.py` using `Black` 
 - Formatted `Solution.md` using `Prettier`
 - `Makefile`, `README.md` and `main.cpp` are left untouched as given on `GitHub`
+
+## Tests
+
+  You can copy paste `Tests` directory inside solution and follow the instructions inside `./Tests/README.md` for testing on pre-existing test cases and creating your own test cases and testing on them. The Offical testcases given in problem are also included in `Tests` directory as `test1` and `test13`.
