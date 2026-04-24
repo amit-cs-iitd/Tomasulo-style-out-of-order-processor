@@ -144,4 +144,6 @@ The implementation was compiled and run on provided sample programs (`code1` to 
 
 ## Tests
 
-  You can copy paste `Tests` directory inside solution and follow the instructions inside `./Tests/README.md` for testing on pre-existing test cases and creating your own test cases and testing on them. The Offical testcases given in problem are also included in `Tests` directory as `test1` and `test13`.
+  You can copy paste `Tests` directory inside solution and follow the instructions inside `./Tests/README.md` for testing on pre-  existing test cases and creating your own test cases and testing on them. The Offical testcases given in problem are also included in `Tests` directory as `test1` and `test13`.
+
+  - The `Tests` directory has been copied from "https://github.com/AbhinavPJ/checker-col216-A2.git". Thanks to Abhinav.
